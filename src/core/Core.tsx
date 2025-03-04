@@ -10,12 +10,16 @@ export class Core {
     PIXI.TexturePool.textureOptions.scaleMode = 'nearest'
     this.app = new PIXI.Application()
     return this.app.init(options).then(() => {
-      const canvas = this.app?.canvas
+      const canvas = this.getCanvas()
       if (canvas) {
         canvas.id = 'bonus-activation'
         this.container?.appendChild(canvas)
       }
     })
+  }
+
+  protected getCanvas() {
+    return this.app?.canvas
   }
 
 }

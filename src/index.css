@@ -13,6 +13,13 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+body {
+  background-color: #151a25;
+  -webkit-user-select: none; /* Safari */
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
