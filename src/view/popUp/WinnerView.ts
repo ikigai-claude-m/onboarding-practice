@@ -23,7 +23,7 @@ export default class WinnerView extends PopUpView {
     this.addGradientText('YOU\nve WON', 954, 480, 40, false, true)
     this.addGradientText('10000.00', 954, 615, 90)
     this.addGradientText('USD', 954, 730, 55)
-    // this.addGradientText('IN \nX\n FREE SPINS', 948, 754, 38)
+    this.addGradientText('IN \nX\n FREE SPINS', 948, 860, 38)
   }
 
   createAndModifyLetsGoButton() {
