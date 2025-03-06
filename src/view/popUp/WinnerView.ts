@@ -2,6 +2,7 @@ import { Sprite } from 'pixi.js'
 import { PopUpView } from './PopUpView'
 import { uiSetting } from '../../config/UiSettingConfig'
 import { GradientConfig, GradientTextTexture } from '../../utility/GradientTextTexture'
+import * as PIXI from 'pixi.js'
 
 
 export default class WinnerView extends PopUpView {
@@ -19,11 +20,11 @@ export default class WinnerView extends PopUpView {
   }
 
   protected createTexts() {
-    this.addGradientText('CONGRATULATIONS', 954, 400, 60)
+    this.addGradientText('CONGRATULATIONS!', 954, 735, 60, true)
     this.addGradientText('YOU\nve WON', 954, 480, 40, false, true)
     this.addGradientText('10000.00', 954, 615, 90)
     this.addGradientText('USD', 954, 730, 55)
-    this.addGradientText('IN \nX\n FREE SPINS', 948, 860, 38)
+    this.addGradientText('IN \nX\n FREE SPINS', 948, 860, 38, false, true)
   }
 
   createAndModifyLetsGoButton() {
@@ -48,7 +49,32 @@ export default class WinnerView extends PopUpView {
 
   protected addGradientText(text: string, posX: number, posY: number, fontSize: number, curved?: boolean, isGray?: boolean, scale = 1) {
     if(curved) {
-      // To be implemented
+      const sprite = this.createCanvasText(text, fontSize, isGray)
+      const radius = 400
+      const maxRopePoints = 100
+      const step = Math.PI / maxRopePoints
+      let ropePoints = maxRopePoints - Math.round((sprite.texture.width / (radius * Math.PI)) * maxRopePoints)
+      ropePoints /= 2.1
+      const points = []
+      for (let i = maxRopePoints - ropePoints; i > ropePoints; i--) {
+        const x = radius * Math.cos(step * i)
+        const y = radius * Math.sin(step * i)
+        points.push(new PIXI.Point(x, -y))
+      }
+      const rope = new PIXI.MeshRope({
+        texture: sprite.texture,
+        points: points,
+        width: sprite.texture.width,
+        height: sprite.texture.height
+      })
+      this.getContainer()?.addChild(rope)
+      const bounds = this.getContainer()?.getLocalBounds();
+      const matrix = new PIXI.Matrix();
+      matrix.tx = -bounds!.x;
+      matrix.ty = -bounds!.y;
+      rope.x = posX
+      rope.y = posY
+      if (scale !== 1) rope.scale.set(scale)
     } else {
       const sprite = this.createGradientText(text, posX, posY, fontSize, scale, isGray)
       this.getContainer()?.addChild(sprite)
@@ -81,7 +107,7 @@ export default class WinnerView extends PopUpView {
     let gradient: CanvasGradient | string
 
     if (isGray) {
-      gradient = '#999999'
+      gradient = '#FFFFFF'
     } else {
       gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
       gradient.addColorStop(0.29, '#D93A1400')
@@ -97,8 +123,8 @@ export default class WinnerView extends PopUpView {
     ]
 
     const gradiantConfig = this.gradientConfig
-    const textGradient = GradientTextTexture.createGradient(ctx, canvas.height, gradiantConfig.fillGradient)
-    const strokeGradient = GradientTextTexture.createGradient(ctx, canvas.height, gradiantConfig.strokeGradient)
+    const textGradient = GradientTextTexture.createGradient(ctx, canvas.height, gradiantConfig.fillGradient, isGray)
+    const strokeGradient = GradientTextTexture.createGradient(ctx, canvas.height, gradiantConfig.strokeGradient, isGray)
 
     const metrics = ctx.measureText(text)
     const textWidth = metrics.width
@@ -128,7 +154,7 @@ export default class WinnerView extends PopUpView {
       currentX += ctx.measureText(letter).width + letterSpacing
     }
 
-    ctx.strokeStyle = '#9A2203'
+    ctx.strokeStyle = isGray ? '#3F2410' : '#9A2203'
     ctx.lineWidth = 6
     currentX = x
     for (const letter of text) {
@@ -207,20 +233,21 @@ export default class WinnerView extends PopUpView {
       height: maxY - minY + 1,
     }
   }
+  //#685F4D
 
   public gradientConfig: GradientConfig = {
     fillGradient: [
-      { position: 0.0, color: '#F4ED4A' },
-      { position: 0.39, color: '#F4ED4A' },
-      { position: 0.55, color: '#FEA602' },
+      { position: 0.0, color: '#F4ED4A', grayColor: '#685F4D' },
+      { position: 0.39, color: '#F4ED4A', grayColor: '#685F4D' },
+      { position: 0.55, color: '#FEA602', grayColor: '#685F4D' },
     ],
     strokeGradient: [
-      { position: 0.21, color: '#9921024F' },
-      { position: 0.2854, color: '#FBF4BF00' },
-      { position: 0.3956, color: '#FBF4BF00' },
-      { position: 0.5116, color: '#FBF4BF4F' },
-      { position: 0.645, color: '#FBF4BF00' },
-      { position: 0.79, color: '#FBF4BF00' },
+      { position: 0.21, color: '#9921024F', grayColor: '#FFFFFF' },
+      { position: 0.2854, color: '#FBF4BF00', grayColor: '#FFFFFF' },
+      { position: 0.3956, color: '#FBF4BF00', grayColor: '#685F4D' },
+      { position: 0.5116, color: '#FBF4BF4F', grayColor: '#685F4D' },
+      { position: 0.645, color: '#FBF4BF00', grayColor: '#685F4D' },
+      { position: 0.79, color: '#FBF4BF00', grayColor: '#FFFFFF' },
     ],
     style: {
       shadowColor: '#9A2203',
