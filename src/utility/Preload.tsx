@@ -30,6 +30,12 @@ export class Preload {
     let reconnectTimes = 0
     while (true) {
       try {
+
+        PIXI.Assets.add({ alias: 'bonus_json', src: "scatter/Bonus_anim.json" })
+       PIXI.Assets.add({ alias: 'bonus_atlas', src: "scatter/Bonus_anim.atlas" })
+
+      await PIXI.Assets.load(['bonus_json', 'bonus_atlas'])
+
         await PIXI.Assets.load(resList, (progress) => {
           callback(progress)
         })
@@ -84,6 +90,7 @@ const resList = [
   'button/InGameButton.png',
   'button/InGameButtonHover.png',
   'winner/Popup_winner.png',
+  'scatter/Bonus_anim.png',
 ]
 
 export const preloader = new Preload(resList)

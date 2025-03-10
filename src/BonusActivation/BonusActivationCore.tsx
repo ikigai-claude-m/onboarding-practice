@@ -6,12 +6,14 @@ import GameManager from '../managers/GameManager'
 import { bonusActivationModel } from '../model/BonusActivationModel'
 import { Subscribes } from '../observable/Observable'
 import { BonusActivationSystem } from '../system/bonusActivationSystem'
+import { ScatterSystem } from '../system/scatterSystem'
 import { Preload } from '../utility/Preload'
 import { DEVICE_TYPE, Utils } from '../utility/Utils'
 
 export class BonusActivationCore extends Core {
     private subscribes: Subscribes = null
     private bonusActivationSystem: BonusActivationSystem | null = null
+    private scatterSystem: ScatterSystem | null = null
     private systems: System[] = []
  
   public async initial() {
@@ -124,13 +126,11 @@ export class BonusActivationCore extends Core {
   }
 
   private initialSystem() {
-
     this.bonusActivationSystem = new BonusActivationSystem()
-
+    this.scatterSystem = new ScatterSystem()
     this.systems = [
+      this.scatterSystem,
       this.bonusActivationSystem,
     ]
-    // this.systems = [this.backgroundSystem, this.uiSystem]
   }
-
 }

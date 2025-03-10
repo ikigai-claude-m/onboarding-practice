@@ -1,23 +1,20 @@
-
-
-
 import { System } from '../core/System'
 import { View } from '../core/View'
-import WinnerView from '../view/popUp/WinnerView'
-import WinnerViewModel from '../viewModel/popUp/WinnerViewModel'
+import ScatterView from '../view/scatter/ScatterView'
+import ScatterViewModel from '../viewModel/popUp/ScatterViewModel'
 
-export class BonusActivationSystem extends System {
+export class ScatterSystem extends System {
 
-  private WinnerView: WinnerView | null = null
+  private ScatterView: ScatterView | null = null
 
   private systemViews: (View | null)[] = []
-  private WinnerViewModel: WinnerViewModel | null = null
+  private ScatterViewModel: ScatterViewModel | null = null
 
   public constructor() {
     super()
     this.initial()
     this.systemViews = [
-      this.WinnerView,
+      this.ScatterView,
     ]
   }
 
@@ -49,8 +46,8 @@ export class BonusActivationSystem extends System {
 
 
   private initial() {
-    this.WinnerView = new WinnerView()
-    this.WinnerViewModel = new WinnerViewModel()
-    this.WinnerViewModel.bindView(this.WinnerView)
+    this.ScatterView = new ScatterView()
+    this.ScatterViewModel = new ScatterViewModel()
+    this.ScatterViewModel.bindView(this.ScatterView)
   }
 }

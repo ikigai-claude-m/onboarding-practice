@@ -20,6 +20,9 @@ export interface ISpineSetting {
   atlas: string
   scale: number
   animation: string
+  blurAnimation: string
+  idleAnimation: string
+  landingAnimation: string
 }
 
 export interface ISpineCreateSetting {
