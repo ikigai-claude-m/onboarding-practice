@@ -22,9 +22,9 @@ export default class WinnerView extends PopUpView {
   protected createTexts() {
     this.createTitle() // CONGRATULATIONS!
     this.createSubtitle("YOU'VE WON", true) // YOU'VE WON
-    this.addGradientText('10000.00', 954, 615, 90)
-    this.addGradientText('USD', 954, 730, 55)
-    this.createSubtitle("IN 'X' FREE SPINS", false) // YOU'VE WON
+    this.addGradientText('10000.00', 954, 615, 90, true) // AMOUNT
+    this.addGradientText('USD', 958, 728, 40, false) // USD
+    this.createSubtitle("IN 'X' FREE SPINS", false) // IN 'X' FREE SPINS
   }
 
   createAndModifyLetsGoButton() {
@@ -83,7 +83,7 @@ export default class WinnerView extends PopUpView {
       matrix.tx = -bounds!.x;
       matrix.ty = -bounds!.y;
       sprite.x = 954
-      sprite.y = isFirst ? 473 : 865
+      sprite.y = isFirst ? 453 : 842
   }
 
    private createCanvasTitleText(text: string, fontSize: number) {
@@ -197,17 +197,11 @@ export default class WinnerView extends PopUpView {
 
     ctx.font = `normal 500 ${fontSize}px ${uiSetting.gradientFont}`
     ctx.textBaseline = 'top'
-      const gradient = '#FFFFFF'
-    const shadows = [
-      { offsetX: 0, offsetY: 55.522, blur: 16.072, color: 'rgba(35, 16, 4, 0.01)' },
-      { offsetX: 0, offsetY: 35.067, blur: 14.611, color: 'rgba(35, 16, 4, 0.1)' },
-      { offsetX: 0, offsetY: 20.455, blur: 11.689, color: 'rgba(35, 16, 4, 0.34)' },
-      { offsetX: 0, offsetY: 8.767, blur: 8.767, color: 'rgba(35, 16, 4, 0.6)' },
-      { offsetX: 0, offsetY: 2.922, blur: 4.383, color: 'rgba(35, 16, 4, 1)' },
-    ]
 
-    const gradiantConfig = this.gradientConfig
-    const textGradient = GradientTextTexture.createGradient(ctx, canvas.height, gradiantConfig.fillGradient, true)
+
+    const textGradient = GradientTextTexture.createGradient(ctx, canvas.height, [
+      { position: 1, color: '#685F4D' },
+    ])
 
     const metrics = ctx.measureText(text)
     const textWidth = metrics.width
@@ -216,42 +210,33 @@ export default class WinnerView extends PopUpView {
     const letterSpacing = 3
     let currentX = x
 
-    shadows.forEach((shadow) => {
-      ctx.save()
-      ctx.fillStyle = shadow.color
-
-      ctx.filter = `blur(${shadow.blur}px)`
-      currentX = x
-      for (const letter of text) {
-        ctx.fillText(letter, currentX + shadow.offsetX, y + 8 + shadow.offsetY)
-        currentX += ctx.measureText(letter).width + letterSpacing
-      }
-      ctx.restore()
-    })
-
-    ctx.fillStyle = gradient
-    ctx.filter = 'none'
+    // First layer (drop shadow)
+    ctx.save()
+    ctx.fillStyle = 'rgba(255, 255, 255, 1)'
+    ctx.filter = 'blur(1px)'
     currentX = x
     for (const letter of text) {
-      ctx.fillText(letter, currentX, y + 6)
+      ctx.fillText(letter, currentX - 3, y + 7)
       currentX += ctx.measureText(letter).width + letterSpacing
     }
+    ctx.restore()
 
-    ctx.strokeStyle = '#3F2410'
-    ctx.lineWidth = 6
+    // Second layer (inner shadow)
+    ctx.save()
+    ctx.fillStyle = '#3F2410'
+    ctx.filter = 'blur(1px)'
     currentX = x
     for (const letter of text) {
-      ctx.strokeText(letter, currentX, y)
+      ctx.fillText(letter, currentX - 1.5, y + 3)
       currentX += ctx.measureText(letter).width + letterSpacing
     }
+    ctx.restore()
 
+    // Third layer (color)
     ctx.fillStyle = textGradient
-    ctx.lineWidth = 0.1
-    ctx.strokeStyle = '#3F2410'
     currentX = x
     for (const letter of text) {
-      ctx.fillText(letter, currentX, y)
-      ctx.strokeText(letter, currentX, y)
+      ctx.fillText(letter, currentX + 1, y + 5)
       currentX += ctx.measureText(letter).width + letterSpacing
     }
 
@@ -281,16 +266,15 @@ export default class WinnerView extends PopUpView {
   }
 
 
-  protected addGradientText(text: string, posX: number, posY: number, fontSize: number, scale = 1) {
-    const sprite = this.createGradientText(text, posX, posY, fontSize, scale)
+  protected addGradientText(text: string, posX: number, posY: number, fontSize: number, isAmount: boolean) {
+    const sprite = this.createGradientText(text, posX, posY, fontSize, isAmount)
     this.getContainer()?.addChild(sprite)
   }
 
-  protected createGradientText(text: string, posX: number, posY: number, fontSize: number, scale = 1) {
-    const sprite = this.createCanvasText(text, fontSize)
+  protected createGradientText(text: string, posX: number, posY: number, fontSize: number, isAmount: boolean) {
+    const sprite = this.createCanvasText(text, fontSize, isAmount)
     sprite.x = posX
     sprite.y = posY
-    if (scale !== 1) sprite.scale.set(scale)
     return sprite
   }
 
@@ -304,9 +288,7 @@ export default class WinnerView extends PopUpView {
     } as ICanvasSetting
   }
 
-
-
-  createCanvasText(text: string, fontSize: number) {
+  createCanvasText(text: string, fontSize: number, isAmount: boolean) {
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')!
     const { width, height } = GradientTextTexture.getGradientTextSize(
@@ -321,12 +303,6 @@ export default class WinnerView extends PopUpView {
     ctx.font = `normal 500 ${fontSize}px ${uiSetting.gradientFont}`
     ctx.textBaseline = 'top'
 
-
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
-    gradient.addColorStop(0, '#000000')
-    gradient.addColorStop(1, '#000000')
-  
-
     const shadows = [
       { offsetX: 0, offsetY: 55.522, blur: 16.072, color: 'rgba(35, 16, 4, 0.01)' },
       { offsetX: 0, offsetY: 35.067, blur: 14.611, color: 'rgba(35, 16, 4, 0.1)' },
@@ -335,8 +311,15 @@ export default class WinnerView extends PopUpView {
       { offsetX: 0, offsetY: 2.922, blur: 4.383, color: 'rgba(35, 16, 4, 1)' },
     ]
 
+    const fillGradient = [
+      { position: 0.30, color: '#FED302'},
+      { position: 0.42, color: '#FED302'},
+      { position: 0.48, color: '#FFEF02'},
+      { position: 0.51, color: '#F7AA01'},
+    ]
+
     const gradiantConfig = this.gradientConfig
-    const textGradient = GradientTextTexture.createGradient(ctx, canvas.height, gradiantConfig.fillGradient)
+    const textGradient = GradientTextTexture.createGradient(ctx, canvas.height, fillGradient)
     const strokeGradient = GradientTextTexture.createGradient(ctx, canvas.height, gradiantConfig.strokeGradient)
 
     const metrics = ctx.measureText(text)
@@ -349,7 +332,6 @@ export default class WinnerView extends PopUpView {
     shadows.forEach((shadow) => {
       ctx.save()
       ctx.fillStyle = shadow.color
-
       ctx.filter = `blur(${shadow.blur}px)`
       currentX = x
       for (const letter of text) {
@@ -363,12 +345,12 @@ export default class WinnerView extends PopUpView {
     ctx.filter = 'none'
     currentX = x
     for (const letter of text) {
-      ctx.fillText(letter, currentX, y + 6)
+      ctx.fillText(letter, currentX, y + (isAmount ? 10 : 7))
       currentX += ctx.measureText(letter).width + letterSpacing
     }
 
     ctx.strokeStyle = '#3F2410'
-    ctx.lineWidth = 3
+    ctx.lineWidth = isAmount ? 8 : 5
     currentX = x
     for (const letter of text) {
       ctx.strokeText(letter, currentX, y)
@@ -380,7 +362,7 @@ export default class WinnerView extends PopUpView {
     ctx.strokeStyle = strokeGradient
     currentX = x
     for (const letter of text) {
-      ctx.fillText(letter, currentX, y)
+      ctx.fillText(letter, currentX + 2, y)
       ctx.strokeText(letter, currentX, y)
       currentX += ctx.measureText(letter).width + letterSpacing
     }
@@ -449,17 +431,17 @@ export default class WinnerView extends PopUpView {
 
   public gradientConfig: GradientConfig = {
     fillGradient: [
-      { position: 0.0, color: '#F4ED4A', grayColor: '#685F4D' },
-      { position: 0.39, color: '#F4ED4A', grayColor: '#685F4D' },
-      { position: 0.55, color: '#FEA602', grayColor: '#685F4D' },
+      { position: 0.0, color: '#F4ED4A'},
+      { position: 0.39, color: '#F4ED4A'},
+      { position: 0.55, color: '#FEA602'},
     ],
     strokeGradient: [
-      { position: 0.21, color: '#9921024F', grayColor: '#FFFFFF' },
-      { position: 0.2854, color: '#FBF4BF00', grayColor: '#FFFFFF' },
-      { position: 0.3956, color: '#FBF4BF00', grayColor: '#685F4D' },
-      { position: 0.5116, color: '#FBF4BF4F', grayColor: '#685F4D' },
-      { position: 0.645, color: '#FBF4BF00', grayColor: '#685F4D' },
-      { position: 0.79, color: '#FBF4BF00', grayColor: '#FFFFFF' },
+      { position: 0.21, color: '#9921024F'},
+      { position: 0.2854, color: '#FBF4BF00'},
+      { position: 0.3956, color: '#FBF4BF00'},
+      { position: 0.5116, color: '#FBF4BF4F'},
+      { position: 0.645, color: '#FBF4BF00'},
+      { position: 0.79, color: '#FBF4BF00'},
     ],
     style: {
       shadowColor: '#9A2203',

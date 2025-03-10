@@ -3,7 +3,6 @@ import { uiSetting } from '../config/UiSettingConfig'
 export interface GradientStop {
   position: number
   color: string
-  grayColor?: string
 }
 
 export interface GradientConfig {
@@ -53,10 +52,10 @@ export class GradientTextTexture {
     fontSize: 48,
   }
 
-  public static createGradient(ctx: CanvasRenderingContext2D, height: number, stops: GradientStop[], isGray?: boolean): CanvasGradient {
+  public static createGradient(ctx: CanvasRenderingContext2D, height: number, stops: GradientStop[]): CanvasGradient {
     const gradient = ctx.createLinearGradient(0, 0, 0, height)
     stops.forEach((stop) => {
-      gradient.addColorStop(stop.position, isGray ? stop.grayColor! : stop.color )
+      gradient.addColorStop(stop.position, stop.color )
     })
     return gradient
   }
