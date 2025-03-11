@@ -15,9 +15,7 @@ export default class Scatter extends InitScatterView {
   }
 
   createObjects() {
-    this.createWinSpine()
-    // this.createTexts()
-    // this.createAndModifyLetsGoButton()
+    this.createBonusSpine()
   }
 
   onDraw(width: number, height: number) {
@@ -32,7 +30,7 @@ export default class Scatter extends InitScatterView {
     this.spriteBg.position.set(uiSetting.gameWidth / 2, uiSetting.gameHeight / 2)
   }
 
-  protected createWinSpine() {
+  protected createBonusSpine() {
     const bonusSpine = this.createSpine('Bonus_spine', this.bonusSpineSetting)
     if (!bonusSpine) return
 
