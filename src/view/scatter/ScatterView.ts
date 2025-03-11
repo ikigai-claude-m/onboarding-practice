@@ -4,6 +4,7 @@ import { uiSetting } from '../../config/UiSettingConfig'
 import { GradientConfig, GradientTextTexture, } from '../../utility/GradientTextTexture'
 import { InitScatterView } from './InitScatterView'
 import { ISpineSetting } from '../../common/util/UIUtil'
+import { AnimationStateListener, TrackEntry } from '@esotericsoftware/spine-pixi-v8'
 
 
 export default class Scatter extends InitScatterView {
@@ -33,20 +34,44 @@ export default class Scatter extends InitScatterView {
   protected createBonusSpine() {
     const bonusSpine = this.createSpine('Bonus_spine', this.bonusSpineSetting)
     if (!bonusSpine) return
-
-    bonusSpine.visible = true
     bonusSpine.position.set(uiSetting.gameWidth / 2, uiSetting.gameHeight / 2)
 
     const animations = [
-      { animation: this.bonusSpineSetting.idleAnimation, delay: 0 },
-      { animation: this.bonusSpineSetting.blurAnimation, delay: 2000 },
-      { animation: this.bonusSpineSetting.idleAnimation, delay: 4000 },
-      { animation: this.bonusSpineSetting.landingAnimation, delay: 6000 },
-      { animation: this.bonusSpineSetting.animation, delay: 8000 },
+      { animation: this.bonusSpineSetting.idleAnimation, delay: 0, loop: true, idx: 0 },
+      { animation: this.bonusSpineSetting.blurAnimation, delay: 2000, loop: true, idx: 0 },
+      { animation: this.bonusSpineSetting.idleAnimation, delay: 2500, loop: true, idx: 0 },
+      { animation: this.bonusSpineSetting.landingAnimation, delay: 3000, loop: false, idx: 0 },
+      { animation: this.bonusSpineSetting.animation, delay: 3500, loop: false, idx: 0 },
     ]
-    animations.forEach(({ animation, delay }) =>
-      setTimeout(() => bonusSpine.state.setAnimation(0, animation, true), delay)
-    )
+
+    const firstAnimation = animations[0].animation
+    const lastAnimation = animations[animations.length - 1].animation
+
+    const listener = {
+      start(entry: TrackEntry) {
+        if (entry.animation?.name == firstAnimation) {
+          bonusSpine.visible = true
+        }
+      },
+      complete(entry: TrackEntry) {
+        if (entry.animation?.name == lastAnimation) {
+          bonusSpine.visible = false
+        }
+      },
+    } as AnimationStateListener
+
+    bonusSpine.state.addListener(listener)
+
+    animations.forEach(({ animation, delay, loop, idx }, index) => {
+      setTimeout(() => {
+        if (index == 0) {
+          bonusSpine.state.setAnimation(idx, animation, loop)
+        } else {
+          bonusSpine.state.addAnimation(idx, animation, loop)
+        }
+      }, delay)
+    })
+  
     this.getContainer()?.addChild(bonusSpine)
   }
 
