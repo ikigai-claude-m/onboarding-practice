@@ -77,7 +77,7 @@ export default class Scatter extends InitScatterView {
     this.getContainer()?.addChild(bonusSpine)
   }
 
-  protected createSymbolSpine() {
+  protected async createSymbolSpine() {
     const symbolSpine = this.createSpine('Symbol_spine', this.symbolSpineSetting)
     if (!symbolSpine) return
     symbolSpine.position.set((uiSetting.gameWidth / 2), (uiSetting.gameHeight / 2) + 200)
@@ -91,7 +91,7 @@ export default class Scatter extends InitScatterView {
     const firstAnimation = animations[0].animation
     const lastAnimation = animations[animations.length - 1].animation
 
-    const sprite = this.createCanvasSubTitleText('1x', 80)
+    const sprite = await this.createWildNumberImage()
 
     const listener = {
       start(entry: TrackEntry) {
@@ -123,93 +123,55 @@ export default class Scatter extends InitScatterView {
     this.getContainer()?.addChild(symbolSpine)
   }
 
-  private createCanvasSubTitleText(text: string, fontSize: number) {
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')!
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-    ctx.font = `normal 500 ${fontSize}px ${uiSetting.gradientFont}`
-    ctx.textBaseline = 'top'
-
-    const textGradient = GradientTextTexture.createGradient(ctx, canvas.height, [
-      { position: 0.09, color: '#F9C53F' },
-      { position: 0.39, color: '#FAB650' },
-      { position: 0.54, color: '#FD9D2D' },
-      { position: 0.70, color: '#FA8350' },
-      { position: 0.84, color: '#F9D03F' },
-    ])
-
-    const metrics = ctx.measureText(text)
-    const textWidth = metrics.width
-    const x = (canvas.width - textWidth) / 2 
-    const y = (canvas.height - fontSize) / 2
-    const letterSpacing = 3
-    let currentX = x
-
-    const firstLayerGradient = GradientTextTexture.createGradient(ctx, canvas.height, [
-      {position: 0, color: '#AC6320'},
-      {position: 1, color: '#A85425'}
-    ])
-
-    // First layer (drop shadow)
-    ctx.save()
-    ctx.fillStyle = firstLayerGradient
-    ctx.filter = 'blur(1px)'
-    currentX = x
-    for (const letter of text) {
-      ctx.fillText(letter, currentX - 6, y + 7)
-      currentX += ctx.measureText(letter).width + letterSpacing
-    }
-    ctx.restore()
-
-    // Second layer (inner shadow)
-    ctx.save()
-    ctx.fillStyle = '#ffffff'
-    ctx.strokeStyle = '#ffffff'
-    ctx.lineWidth = 12;
-    currentX = x
-    for (const letter of text) {
-      ctx.fillText(letter, currentX - 1.5, y + 8)
-      currentX += ctx.measureText(letter).width + letterSpacing
-    }
+  // private createWildNumberImage(): Promise<Sprite> {
+  //   return new Promise((resolve) => {
+  //     const canvas = document.createElement('canvas')
+  //     const ctx = canvas.getContext('2d')!
     
-    ctx.restore()
+  //     const img1 = new Image()
+  //     const img2 = new Image()
+  //     img1.onload = () => {
+  //       ctx.drawImage(img1, 0, 0, canvas.width = img1.width - 80, canvas.height = img1.height - 80)
+  //       const img2X = img1.width
+  //       ctx.drawImage(img2, img2X, 0)
+  //       const sprite = Sprite.from(canvas)
+  //       sprite.anchor.set(0.4, 0.55)
+  //       resolve(sprite)
+  //     }
 
-    // Third layer (color)
-    ctx.save()
-    ctx.fillStyle = textGradient
-    currentX = x
-    for (const letter of text) {
-      ctx.fillText(letter, currentX + 1, y + 8)
-      currentX += ctx.measureText(letter).width + letterSpacing
-    }
-    ctx.restore()
-    ctx.fill()
-    ctx.stroke()
+      
+  //     img2.onload = () => {
+  //       ctx.drawImage(img2, 0, 0, canvas.width = img2.width - 80, canvas.height = img2.height - 80)
+  //       const sprite = Sprite.from(canvas)
+  //       sprite.anchor.set(0.5, 0.55)
+  //       resolve(sprite)
+  //     }
+  //     img1.src = 'wildNumbers/Number1.png'
+  //     img2.src = 'wildNumbers/NumberX.png'
+  //   })
+  // }
 
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-    const bounds = this.getAlphaBounds(imageData)
+  private createWildNumberImage(): Promise<Sprite> {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')!
 
-    const trimmedCanvas = document.createElement('canvas')
-    trimmedCanvas.width = bounds.width
-    trimmedCanvas.height = bounds.height
-    const trimmedCtx = trimmedCanvas.getContext('2d')!
-
-    trimmedCtx.drawImage(
-      canvas,
-      bounds.left,
-      bounds.top,
-      bounds.width,
-      bounds.height,
-      0,
-      0,
-      bounds.width,
-      bounds.height
-    )
-
-    const sprite = Sprite.from(trimmedCanvas)
-    sprite.anchor.set(0.5, 0.8)
-    return sprite
+      const img1 = new Image()
+      const img2 = new Image()
+      Promise.all([new Promise((resolve) => {
+        img1.onload = resolve
+        img1.src = 'wildNumbers/Number1.png'
+      }), new Promise((resolve) => {
+        img2.onload = resolve
+        img2.src = 'wildNumbers/NumberX.png'
+      })]).then(() => {
+        ctx.drawImage(img1, 0, 0, img1.width - 20, img1.height - 20)
+        ctx.drawImage(img2, 65, 0, img2.width - 20, img2.height - 20)
+        const sprite = Sprite.from(canvas)
+        sprite.anchor.set(0.5, 0.95)
+        resolve(sprite)
+      })
+    })
   }
 
   private get bonusSpineSetting() {
