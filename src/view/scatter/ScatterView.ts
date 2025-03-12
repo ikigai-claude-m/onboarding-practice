@@ -1,5 +1,6 @@
 import { Sprite } from 'pixi.js'
 
+
 import { uiSetting } from '../../config/UiSettingConfig'
 import { GradientConfig, GradientTextTexture, } from '../../utility/GradientTextTexture'
 import { InitScatterView } from './InitScatterView'
@@ -17,6 +18,7 @@ export default class Scatter extends InitScatterView {
 
   createObjects() {
     this.createBonusSpine()
+    this.createSymbolSpine()
   }
 
   onDraw(width: number, height: number) {
@@ -34,7 +36,7 @@ export default class Scatter extends InitScatterView {
   protected createBonusSpine() {
     const bonusSpine = this.createSpine('Bonus_spine', this.bonusSpineSetting)
     if (!bonusSpine) return
-    bonusSpine.position.set(uiSetting.gameWidth / 2, uiSetting.gameHeight / 2)
+    bonusSpine.position.set(uiSetting.gameWidth / 2, (uiSetting.gameHeight / 2) - 150)
 
     const animations = [
       { animation: this.bonusSpineSetting.idleAnimation, delay: 0, loop: true, idx: 0 },
@@ -55,7 +57,7 @@ export default class Scatter extends InitScatterView {
       },
       complete(entry: TrackEntry) {
         if (entry.animation?.name == lastAnimation) {
-          bonusSpine.visible = false
+          bonusSpine.visible = true
         }
       },
     } as AnimationStateListener
@@ -75,6 +77,141 @@ export default class Scatter extends InitScatterView {
     this.getContainer()?.addChild(bonusSpine)
   }
 
+  protected createSymbolSpine() {
+    const symbolSpine = this.createSpine('Symbol_spine', this.symbolSpineSetting)
+    if (!symbolSpine) return
+    symbolSpine.position.set((uiSetting.gameWidth / 2), (uiSetting.gameHeight / 2) + 200)
+
+    const animations = [
+      { animation: this.symbolSpineSetting.animation, delay: 0, loop: true, idx: 0 },
+      { animation: this.symbolSpineSetting.boostAnimation.reveal, delay: 2000, loop: false, idx: 0 },
+      { animation: this.symbolSpineSetting.boostAnimation.loop, delay: 4000, loop: true, idx: 0 },
+    ]
+
+    const firstAnimation = animations[0].animation
+    const lastAnimation = animations[animations.length - 1].animation
+
+    const sprite = this.createCanvasSubTitleText('1x', 80)
+
+    const listener = {
+      start(entry: TrackEntry) {
+        if (entry.animation?.name == firstAnimation) {
+          symbolSpine.visible = true
+          symbolSpine.addChild(sprite)
+        } else {
+          sprite.visible = false
+        }
+      },
+      complete(entry: TrackEntry) {
+        if (entry.animation?.name == lastAnimation) {
+          symbolSpine.visible = true
+        }
+      },
+    } as AnimationStateListener
+
+    symbolSpine.state.addListener(listener)
+
+    animations.forEach(({ animation, delay, loop, idx }, index) => {
+      setTimeout(() => {
+        if (index == 0) {
+          symbolSpine.state.setAnimation(idx, animation, loop)
+        } else {
+          symbolSpine.state.addAnimation(idx, animation, loop)
+        }
+      }, delay)
+    })
+    this.getContainer()?.addChild(symbolSpine)
+  }
+
+  private createCanvasSubTitleText(text: string, fontSize: number) {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')!
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    ctx.font = `normal 500 ${fontSize}px ${uiSetting.gradientFont}`
+    ctx.textBaseline = 'top'
+
+    const textGradient = GradientTextTexture.createGradient(ctx, canvas.height, [
+      { position: 0.09, color: '#F9C53F' },
+      { position: 0.39, color: '#FAB650' },
+      { position: 0.54, color: '#FD9D2D' },
+      { position: 0.70, color: '#FA8350' },
+      { position: 0.84, color: '#F9D03F' },
+    ])
+
+    const metrics = ctx.measureText(text)
+    const textWidth = metrics.width
+    const x = (canvas.width - textWidth) / 2 
+    const y = (canvas.height - fontSize) / 2
+    const letterSpacing = 3
+    let currentX = x
+
+    const firstLayerGradient = GradientTextTexture.createGradient(ctx, canvas.height, [
+      {position: 0, color: '#AC6320'},
+      {position: 1, color: '#A85425'}
+    ])
+
+    // First layer (drop shadow)
+    ctx.save()
+    ctx.fillStyle = firstLayerGradient
+    ctx.filter = 'blur(1px)'
+    currentX = x
+    for (const letter of text) {
+      ctx.fillText(letter, currentX - 6, y + 7)
+      currentX += ctx.measureText(letter).width + letterSpacing
+    }
+    ctx.restore()
+
+    // Second layer (inner shadow)
+    ctx.save()
+    ctx.fillStyle = '#ffffff'
+    ctx.strokeStyle = '#ffffff'
+    ctx.lineWidth = 12;
+    currentX = x
+    for (const letter of text) {
+      ctx.fillText(letter, currentX - 1.5, y + 8)
+      currentX += ctx.measureText(letter).width + letterSpacing
+    }
+    
+    ctx.restore()
+
+    // Third layer (color)
+    ctx.save()
+    ctx.fillStyle = textGradient
+    currentX = x
+    for (const letter of text) {
+      ctx.fillText(letter, currentX + 1, y + 8)
+      currentX += ctx.measureText(letter).width + letterSpacing
+    }
+    ctx.restore()
+    ctx.fill()
+    ctx.stroke()
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    const bounds = this.getAlphaBounds(imageData)
+
+    const trimmedCanvas = document.createElement('canvas')
+    trimmedCanvas.width = bounds.width
+    trimmedCanvas.height = bounds.height
+    const trimmedCtx = trimmedCanvas.getContext('2d')!
+
+    trimmedCtx.drawImage(
+      canvas,
+      bounds.left,
+      bounds.top,
+      bounds.width,
+      bounds.height,
+      0,
+      0,
+      bounds.width,
+      bounds.height
+    )
+
+    const sprite = Sprite.from(trimmedCanvas)
+    sprite.anchor.set(0.5, 0.8)
+    return sprite
+  }
+
   private get bonusSpineSetting() {
     const setting = uiSetting.bonusSpine
     return {
@@ -85,6 +222,20 @@ export default class Scatter extends InitScatterView {
       blurAnimation: setting.blurAnimation,
       idleAnimation: setting.idleAnimation,
       landingAnimation: setting.landingAnimation,
+    } as ISpineSetting
+  }
+
+  private get symbolSpineSetting () {
+    const setting = uiSetting.symbolSpine
+    return {
+      skeleton: setting.skeleton,
+      atlas: setting.atlas,
+      scale: 1,
+      animation: setting.animation,
+      boostAnimation: {
+        reveal: setting.boostAnimation.reveal,
+        loop: setting.boostAnimation.loop
+      }
     } as ISpineSetting
   }
 

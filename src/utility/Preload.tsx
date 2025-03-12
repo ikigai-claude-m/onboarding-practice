@@ -3,7 +3,6 @@ import * as PIXI from 'pixi.js'
 export class Preload {
   private isInitialize = false
   private loader: Promise<void> | null = null
-  private static maxRetry = 0
   private static retryDelay = 0
 
   constructor(list: string[]) {
@@ -33,8 +32,10 @@ export class Preload {
 
         PIXI.Assets.add({ alias: 'bonus_json', src: "scatter/Bonus_anim.json" })
        PIXI.Assets.add({ alias: 'bonus_atlas', src: "scatter/Bonus_anim.atlas" })
+       PIXI.Assets.add({ alias: 'symbol_json', src: "symbol/Special_symbols_anim.json" })
+       PIXI.Assets.add({ alias: 'symbol_atlas', src: "symbol/Special_symbols_anim.atlas" })
 
-      await PIXI.Assets.load(['bonus_json', 'bonus_atlas'])
+      await PIXI.Assets.load(['bonus_json', 'bonus_atlas', 'symbol_json', 'symbol_atlas'])
 
         await PIXI.Assets.load(resList, (progress) => {
           callback(progress)
@@ -42,12 +43,7 @@ export class Preload {
         return
       } catch (error) {
         reconnectTimes++
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         console.log(`reconnectTimes=${reconnectTimes},errorMsg=${error}`)
-        if (reconnectTimes >= this.maxRetry && this.maxRetry > 0) {
-          //keep this flexible
-          // return
-        }
         await new Promise((resolve) => setTimeout(resolve, this.retryDelay))
       }
     }

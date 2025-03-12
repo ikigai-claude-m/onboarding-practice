@@ -20,4 +20,17 @@ export const uiSetting = {
       landingAnimation: 'Bonus_landing',
     }
   },
+  get symbolSpine() {
+    const spineName = 'symbol/Special_symbols_anim'
+    return {
+      spineName: spineName,
+      skeleton: `${spineName}.json`,
+      atlas: `${spineName}.atlas`,
+      animation: 'Wild_loop_anim',
+      boostAnimation: {
+        reveal: 'Boost_reveal_anim',
+        loop: 'Boost_loop_aim',
+      },
+    }
+  },
 }

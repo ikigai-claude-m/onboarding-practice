@@ -23,6 +23,10 @@ export interface ISpineSetting {
   blurAnimation: string
   idleAnimation: string
   landingAnimation: string
+  boostAnimation: {
+    reveal: string
+    loop: string
+  }
 }
 
 export interface ISpineCreateSetting {
