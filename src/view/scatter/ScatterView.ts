@@ -123,39 +123,10 @@ export default class Scatter extends InitScatterView {
     this.getContainer()?.addChild(symbolSpine)
   }
 
-  // private createWildNumberImage(): Promise<Sprite> {
-  //   return new Promise((resolve) => {
-  //     const canvas = document.createElement('canvas')
-  //     const ctx = canvas.getContext('2d')!
-    
-  //     const img1 = new Image()
-  //     const img2 = new Image()
-  //     img1.onload = () => {
-  //       ctx.drawImage(img1, 0, 0, canvas.width = img1.width - 80, canvas.height = img1.height - 80)
-  //       const img2X = img1.width
-  //       ctx.drawImage(img2, img2X, 0)
-  //       const sprite = Sprite.from(canvas)
-  //       sprite.anchor.set(0.4, 0.55)
-  //       resolve(sprite)
-  //     }
-
-      
-  //     img2.onload = () => {
-  //       ctx.drawImage(img2, 0, 0, canvas.width = img2.width - 80, canvas.height = img2.height - 80)
-  //       const sprite = Sprite.from(canvas)
-  //       sprite.anchor.set(0.5, 0.55)
-  //       resolve(sprite)
-  //     }
-  //     img1.src = 'wildNumbers/Number1.png'
-  //     img2.src = 'wildNumbers/NumberX.png'
-  //   })
-  // }
-
   private createWildNumberImage(): Promise<Sprite> {
     return new Promise((resolve) => {
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')!
-
       const img1 = new Image()
       const img2 = new Image()
       Promise.all([new Promise((resolve) => {
